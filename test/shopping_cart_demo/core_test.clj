@@ -1,22 +1,50 @@
 (ns shopping-cart-demo.core-test
   (:require [clojure.test :refer :all]
+            [schema.core :as s]
             [shopping-cart-demo.core :refer :all]))
 
-;Some test data
+; Schema definitions
 
-(def leffe-blonde {:name               "Leffe Blond"
-                   :description        "Exquisite Belgian Beer"
-                   :sku                12345
-                   :cost               1.75
-                   :currency           :euros})
+(def item
+  "A schema for items in the catalogue"
+  {(s/required-key :name)        s/Str
+   (s/required-key :description) s/Str
+   (s/required-key :sku)         s/Num
+   (s/required-key :cost)        s/Num
+   (s/required-key :currency)    s/Keyword})
 
-(def leffe-bruin {:name               "Leffe Bruin"
-                  :description        "Exquisite Dark Belgian Beer"
-                  :sku                54321
-                  :cost               1.75
-                  :currency           :euros})
+(def sku-count
+  "A schema for sku-counts in the cart"
+  {(s/required-key :sku)   s/Num
+   (s/required-key :count) s/Int})
 
-(def test-cart (atom {:name "Shopping Cart" :items []}))
+(def cart
+  "A schema for a shopping cart"
+  (s/atom {(s/required-key :name)       s/Str
+           (s/required-key :sku-counts) #{sku-count}
+           (s/required-key :items)      #{item}}))
+
+; Some test data
+
+(def leffe-blonde {:name        "Leffe Blond"
+                   :description "Exquisite Belgian Beer"
+                   :sku         12345
+                   :cost        1.75
+                   :currency    :euros})
+
+(s/validate item leffe-blonde)
+
+(def leffe-bruin {:name        "Leffe Bruin"
+                  :description "Exquisite Dark Belgian Beer"
+                  :sku         54321
+                  :cost        1.75
+                  :currency    :euros})
+
+(s/validate item leffe-blonde)
+
+(def test-cart (atom {:name "Shopping Cart" :sku-counts #{} :items #{}}))
+
+(s/validate cart test-cart)
 
 (deftest adding-items
   (add-item! test-cart leffe-blonde)

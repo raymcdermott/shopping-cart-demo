@@ -1,0 +1,32 @@
+[
+ ;; A Cart
+ {:db/id     #db/id [:db.part/user -1]
+  :cart/id   #uuid "d213198b-36b5-4c19-8cb1-e172f59091d9"
+  :cart/name "My Shopping Cart"
+  }
+
+ ;; SKU Counts
+ {:db/id            #db/id [:db.part/user -2]
+  :sku-count/sku    12345
+  :sku-count/count  1
+  :cart/_sku-counts #db/id [:db.part/user -1]
+  }
+
+ ;; SKUs
+ {:db/id           #db/id [:db.part/user -3]
+  :sku/number      12345
+  :sku/name        "Leffe Blond"
+  :sku/description "Exquisite Belgian Beer"
+  :sku/cost        1.75
+  :sku/currency    :sku.currency/euro
+  }
+
+ {:db/id           #db/id [:db.part/user -4]
+  :sku/number      54321
+  :sku/name        "Leffe Bruin"
+  :sku/description "Exquisite Dark Belgian Beer"
+  :sku/cost        1.75
+  :sku/currency    :sku.currency/euro
+  }
+
+ ]

@@ -45,16 +45,21 @@
 (defn count-item [cart item]
   (count-sku cart (:sku item)))
 
+; dumbo - these are all client functions
+
+; needed - maybe on the client?
+(defn decrement-item-count [cart]
+  (frequencies (:items @cart)))
+
 ; needed - maybe on the client?
 (defn list-items [cart]
   (frequencies (:items @cart)))
 
-
-(defn store-cart []
+(defn store-cart [cart]
 
   )
 
-(defn fetch-cart []
+(defn fetch-cart [cart-name]
 
   )
 

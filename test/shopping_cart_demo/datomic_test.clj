@@ -1,7 +1,8 @@
 (ns shopping-cart-demo.datomic-test
   (:require [clojure.test :refer :all]
             [datomic.api :as d]
-            [shopping-cart-demo.datomic :refer :all]))
+            [shopping-cart-demo.datomic :refer :all]
+            [shopping-cart-demo.datomic-fn :refer :all]))
 
 (def cart {:cart/id   (java.util.UUID/randomUUID)
            :cart/name "Cart"})
@@ -33,7 +34,8 @@
 (defn set-up-db []
   (if (d/create-database uri)
     (let [conn (d/connect uri)]
-      @(d/transact conn schema))))
+      @(d/transact conn schema)
+      (install-crud-fn conn))))
 
 (defn tear-down-db []
   (comment d/delete-database uri))

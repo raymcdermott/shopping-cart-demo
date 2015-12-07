@@ -17,28 +17,71 @@
     (d/pull db-after '[*] cart-id)))
 
 
-; TODO - combine retraction and update cases
+; Combine retraction and update cases
+(def component-crud
+  (d/function
+    '{:lang   "clojure"
+      :params [db entity comp-key]
+      :code   (if-let [db-entity (d/pull db '[*] (:db/id entity))]
+                (let [db-comps (comp-key db-entity)
+                      user-comps (comp-key entity)
+                      s1 (into #{} (map :db/id db-comps))
+                      s2 (into #{} (map :db/id user-comps))
+                      diffs (clojure.set/difference s1 s2)
+                      retractions (into [] (map (fn [e] [:db.fn/retractEntity e]) diffs))
 
-; TODO test this then combine with new-update
-(defn works-for-retract [db entity-id query-spec comp-key new-comps]
-  "Handle CRUD functions on component entities"
-  (if-let [component (d/pull db query-spec entity-id)]
-    (let [comp-list (comp-key component)
-          s1 (into #{} (map :db/id comp-list))
-          s2 (into #{} (map :db/id new-comps))
-          retraction-list (clojure.set/difference s1 s2)
-          ; create a list of retractions
-          retraction-tx-list (map (fn [e] [:db.fn/retractEntity e]) retraction-list)]
-      (vector retraction-tx-list))))
+                      existing-comps (filter :db/id user-comps)
+                      new-comps (remove :db/id user-comps)
+                      datomicized-comps (map #(assoc % :db/id (d/tempid :db.part/user)) new-comps)
+                      comp-entities (into [] (reduce into [existing-comps datomicized-comps]))
+                      updated-entity (assoc entity comp-key comp-entities)]
+                  (if (empty? retractions)
+                    (vector updated-entity)
+                    (conj retractions updated-entity))))}))
 
-; TODO add retractions
-(defn works-for-new-and-updates [db entity-id comp-key user-comps]
-  (if (d/pull db '[*] entity-id)
-    (let [existing-comps (filter :db/id user-comps)
+;@(d/transact conn [{:db/id #db/id [:db.part/user]
+;                    :db/ident :component/crud
+;                    :db/doc "Handle CRUD for component entities"
+;                    :db/fn component-crud}])
+
+; Combine retraction and update cases
+(defn handle-component-entity-updates [db entity comp-key]
+  (if-let [db-entity (d/pull db '[*] (:db/id entity))]
+    (let [db-comps (comp-key db-entity)
+          user-comps (comp-key entity)
+          s1 (into #{} (map :db/id db-comps))
+          s2 (into #{} (map :db/id user-comps))
+          diffs (clojure.set/difference s1 s2)
+          retractions (into [] (map (fn [e] [:db.fn/retractEntity e]) diffs))
+
+          existing-comps (filter :db/id user-comps)
           new-comps (remove :db/id user-comps)
           datomicized-comps (map #(assoc % :db/id (d/tempid :db.part/user)) new-comps)
+          comp-entities (into [] (reduce into [existing-comps datomicized-comps]))
+          updated-entity (assoc entity comp-key comp-entities)]
+      (if (empty? retractions)
+        (vector updated-entity)
+        (conj retractions updated-entity)))))
+
+; TODO test this then combine with new-update
+(defn works-for-retract [db entity comp-key]
+  "Handle CRUD functions on component entities"
+  (if-let [db-comps (comp-key (d/pull db '[*] (:db/id entity)))]
+    (let [user-comps (comp-key entity)
+          s1 (into #{} (map :db/id db-comps))
+          s2 (into #{} (map :db/id user-comps))
+          retraction-list (clojure.set/difference s1 s2)]
+      (into [] (map (fn [e] [:db.fn/retractEntity e]) retraction-list)))))
+
+; TODO add retractions
+(defn works-for-new-and-updates [db entity comp-key]
+  (if-let [db-comp-list (comp-key (d/pull db '[*] (:db/id entity)))]
+    (let [user-comp-list (comp-key entity)
+          existing-comps (filter :db/id user-comp-list)
+          new-comps (remove :db/id user-comp-list)
+          datomicized-comps (map #(assoc % :db/id (d/tempid :db.part/user)) new-comps)
           comps (into [] (reduce into [existing-comps datomicized-comps]))]
-      (vector (assoc {} :db/id entity-id comp-key comps)))))
+      (vector (assoc entity comp-key comps)))))
 
 ; Can this be made more general using a txn fn?
 (defn- retract-any-missing-component-entities! [conn cart]

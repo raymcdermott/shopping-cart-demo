@@ -4,13 +4,10 @@
             [shopping-cart-demo.datomic :refer :all]
             [shopping-cart-demo.datomic-fn :refer :all]))
 
-(def cart {:cart/id   (java.util.UUID/randomUUID)
-           :cart/name "Cart"})
-
-(def sku-counts [{:cart/sku-counts [{:sku-count/sku   12345
-                                     :sku-count/count 1}
-                                    {:sku-count/sku   54321
-                                     :sku-count/count 2}]}])
+(def sku-counts [{:sku-count/sku   12345
+                  :sku-count/count 1}
+                 {:sku-count/sku   54321
+                  :sku-count/count 2}])
 
 (def catalog [;; SKUs
               {:db/id           #db/id [:db.part/user -3]
@@ -38,7 +35,7 @@
       (install-crud-fn conn))))
 
 (defn tear-down-db []
-  (comment d/delete-database uri))
+  (d/delete-database uri))
 
 (defn fixture [f]
   (set-up-db)
@@ -47,25 +44,50 @@
 
 (use-fixtures :once fixture)
 
-(deftest test-save-new-empty-cart
+(deftest empty-cart
   (let [conn (d/connect uri)
+        cart {:cart/id   (java.util.UUID/randomUUID)
+              :cart/name "Cart"}
         new-cart (save-cart! conn cart)
         id (:db/id new-cart)]
     (is (< 0 id))
     (is (= (type (:cart/id new-cart)) java.util.UUID))
     (is (= (:cart/name cart) (:cart/name new-cart)))))
 
+(deftest saving-items
+  (let [conn (d/connect uri)
+        cart {:cart/id   (java.util.UUID/randomUUID)
+              :cart/name "Cart"}
+        new-cart (save-cart! conn (assoc cart :cart/sku-counts sku-counts))
+        id (:db/id new-cart)]
+    (is (< 0 id))
+    (is (= (type (:cart/id new-cart)) java.util.UUID))
+    (is (= (:cart/name cart) (:cart/name new-cart)))
+    (is (= (count (:cart/sku-counts new-cart)) (count sku-counts)))))
 
-; Notes
+(deftest saving-new-items
+  (let [conn (d/connect uri)
+        cart {:cart/id   (java.util.UUID/randomUUID)
+              :cart/name "Cart"}
+        new-cart (save-cart! conn (assoc cart :cart/sku-counts sku-counts))
+        updated-cart (save-cart! conn (assoc new-cart :cart/sku-counts sku-counts))
+        id (:db/id new-cart)]
+    (is (< 0 id))
+    (is (= (type (:cart/id new-cart)) java.util.UUID))
+    (is (= (:cart/name cart) (:cart/name new-cart)))
+    (is (= (count (:cart/sku-counts new-cart)) (count sku-counts)))
+    (is (= (count (:cart/sku-counts updated-cart)) (count sku-counts)))
+    (not (= (filter :db/id new-cart) (filter :db/id updated-cart)))))
 
-;
-;(defn cart-entity [db cart-uuid]
-;  (d/q '[:find ?e .
-;         :in $ ?cart-uuid
-;         :where [?e :cart/id ?cart-uuid]]
-;       db #uuid cart-uuid))
-;
-;Gives entity ID or nil (the lone '.' flattens the result, obviously)
-
-
+(deftest deleting-items
+  (let [conn (d/connect uri)
+        cart {:cart/id   (java.util.UUID/randomUUID)
+              :cart/name "Cart"}
+        new-cart (save-cart! conn (assoc cart :cart/sku-counts sku-counts))
+        updated-cart (save-cart! conn (assoc new-cart :cart/sku-counts []))
+        id (:db/id new-cart)]
+    (is (< 0 id))
+    (is (= (type (:cart/id new-cart)) java.util.UUID))
+    (is (= (:cart/name cart) (:cart/name new-cart) (:cart/name updated-cart)))
+    (is (empty? (:cart/sku-counts updated-cart)))))
 

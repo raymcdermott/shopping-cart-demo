@@ -1,4 +1,5 @@
-(ns shopping-cart-demo.core)
+(ns shopping-cart-demo.core
+  (:require [shopping-cart-demo.datomic :refer :all]))
 
 ; basic functions - done
 
@@ -9,6 +10,11 @@
 ; save cart to datomic
 
 ; wire up om next
+
+
+; pick this up from the ENV
+(def uri "datomic:dev://localhost:4334/test-cart")
+
 
 (defn add-item! [cart item]
   (swap! cart assoc
@@ -55,12 +61,11 @@
 (defn list-items [cart]
   (frequencies (:items @cart)))
 
+; REST API calls
 (defn store-cart [cart]
+  (save-cart! cart))
 
-  )
-
-(defn fetch-cart [cart-name]
-
-  )
+(defn fetch-cart [name]
+  (get-cart name))
 
 

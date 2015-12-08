@@ -25,7 +25,6 @@
                :sku/currency    :sku.currency/euro
                }])
 
-(def uri "datomic:dev://localhost:4334/test-cart")
 (def schema (read-string (slurp "resources/cart-schema.edn")))
 
 (defn set-up-db []
@@ -45,20 +44,18 @@
 (use-fixtures :once fixture)
 
 (deftest empty-cart
-  (let [conn (d/connect uri)
-        cart {:cart/id   (java.util.UUID/randomUUID)
+  (let [cart {:cart/id   (java.util.UUID/randomUUID)
               :cart/name "Cart"}
-        new-cart (save-cart! conn cart)
+        new-cart (save-cart! cart)
         id (:db/id new-cart)]
     (is (< 0 id))
     (is (= (type (:cart/id new-cart)) java.util.UUID))
     (is (= (:cart/name cart) (:cart/name new-cart)))))
 
 (deftest saving-items
-  (let [conn (d/connect uri)
-        cart {:cart/id   (java.util.UUID/randomUUID)
+  (let [cart {:cart/id   (java.util.UUID/randomUUID)
               :cart/name "Cart"}
-        new-cart (save-cart! conn (assoc cart :cart/sku-counts sku-counts))
+        new-cart (save-cart! (assoc cart :cart/sku-counts sku-counts))
         id (:db/id new-cart)]
     (is (< 0 id))
     (is (= (type (:cart/id new-cart)) java.util.UUID))
@@ -66,11 +63,10 @@
     (is (= (count (:cart/sku-counts new-cart)) (count sku-counts)))))
 
 (deftest saving-new-items
-  (let [conn (d/connect uri)
-        cart {:cart/id   (java.util.UUID/randomUUID)
+  (let [cart {:cart/id   (java.util.UUID/randomUUID)
               :cart/name "Cart"}
-        new-cart (save-cart! conn (assoc cart :cart/sku-counts sku-counts))
-        updated-cart (save-cart! conn (assoc new-cart :cart/sku-counts sku-counts))
+        new-cart (save-cart! (assoc cart :cart/sku-counts sku-counts))
+        updated-cart (save-cart! (assoc new-cart :cart/sku-counts sku-counts))
         id (:db/id new-cart)]
     (is (< 0 id))
     (is (= (type (:cart/id new-cart)) java.util.UUID))
@@ -80,11 +76,10 @@
     (not (= (filter :db/id new-cart) (filter :db/id updated-cart)))))
 
 (deftest deleting-items
-  (let [conn (d/connect uri)
-        cart {:cart/id   (java.util.UUID/randomUUID)
+  (let [cart {:cart/id   (java.util.UUID/randomUUID)
               :cart/name "Cart"}
-        new-cart (save-cart! conn (assoc cart :cart/sku-counts sku-counts))
-        updated-cart (save-cart! conn (assoc new-cart :cart/sku-counts []))
+        new-cart (save-cart! (assoc cart :cart/sku-counts sku-counts))
+        updated-cart (save-cart! (assoc new-cart :cart/sku-counts []))
         id (:db/id new-cart)]
     (is (< 0 id))
     (is (= (type (:cart/id new-cart)) java.util.UUID))

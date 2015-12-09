@@ -9,22 +9,6 @@
                  {:sku-count/sku   54321
                   :sku-count/count 2}])
 
-(def catalog [;; SKUs
-              {:db/id           #db/id [:db.part/user -3]
-               :sku/number      12345
-               :sku/name        "Leffe Blond"
-               :sku/description "Exquisite Belgian Beer"
-               :sku/cost        1.75
-               :sku/currency    :sku.currency/euro
-               }
-              {:db/id           #db/id [:db.part/user -4]
-               :sku/number      54321
-               :sku/name        "Leffe Bruin"
-               :sku/description "Exquisite Dark Belgian Beer"
-               :sku/cost        1.75
-               :sku/currency    :sku.currency/euro
-               }])
-
 (def schema (read-string (slurp "resources/cart-schema.edn")))
 
 (defn set-up-db []
@@ -73,7 +57,8 @@
     (is (= (:cart/name cart) (:cart/name new-cart)))
     (is (= (count (:cart/sku-counts new-cart)) (count sku-counts)))
     (is (= (count (:cart/sku-counts updated-cart)) (count sku-counts)))
-    (not (= (filter :db/id new-cart) (filter :db/id updated-cart)))))
+    (is (false? (= (filter :db/id (:cart/sku-counts new-cart))
+                   (filter :db/id (:cart/sku-counts updated-cart)))))))
 
 (deftest deleting-items
   (let [cart {:cart/id   (java.util.UUID/randomUUID)

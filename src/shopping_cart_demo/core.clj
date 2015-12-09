@@ -7,10 +7,9 @@
 
 ; prismatic schema checking - done, in the test code
 
-; save cart to datomic
+; save cart to datomic - done, also tested (new TODO docker compose to provide more perfect integration tests)
 
 ; wire up om next
-
 
 ; pick this up from the ENV
 (def uri "datomic:dev://localhost:4334/test-cart")

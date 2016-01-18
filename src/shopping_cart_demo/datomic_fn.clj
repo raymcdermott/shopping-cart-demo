@@ -8,15 +8,15 @@
       :code   (if-let [db-entity (d/pull db '[*] (:db/id entity))]
                 (let [db-comps (comp-key db-entity)
                       user-comps (comp-key entity)
-                      s1 (into #{} (map :db/id db-comps))
-                      s2 (into #{} (map :db/id user-comps))
-                      diffs (clojure.set/difference s1 s2)
+                      db-comps-set (into #{} (map :db/id db-comps))
+                      user-comps-sets (into #{} (map :db/id user-comps))
+                      diffs (clojure.set/difference db-comps-set user-comps-sets)
                       retractions (into [] (map (fn [e] [:db.fn/retractEntity e]) diffs))
 
                       existing-comps (filter :db/id user-comps)
-                      new-comps (remove :db/id user-comps)
-                      datomicized-comps (map #(assoc % :db/id (d/tempid :db.part/user)) new-comps)
-                      comp-entities (into [] (reduce into [existing-comps datomicized-comps]))
+                      additions (remove :db/id user-comps)
+                      datomicized-additions (map #(assoc % :db/id (d/tempid :db.part/user)) additions)
+                      comp-entities (into [] (reduce into [existing-comps datomicized-additions]))
                       updated-entity (assoc entity comp-key comp-entities)]
                   (if (empty? retractions)
                     (vector updated-entity)

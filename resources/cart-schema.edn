@@ -1,14 +1,4 @@
 [
- ; Cart (unique name ... will drop that once it is attached to customers)
-
- {:db/id                 #db/id[:db.part/db]
-  :db/ident              :cart/id
-  :db/valueType          :db.type/uuid
-  :db/cardinality        :db.cardinality/one
-  :db/unique             :db.unique/value
-  :db/doc                "The UUID of the cart"
-  :db.install/_attribute :db.part/db}
-
  {:db/id                 #db/id[:db.part/db]
   :db/ident              :cart/name
   :db/valueType          :db.type/string
@@ -17,68 +7,24 @@
   :db.install/_attribute :db.part/db}
 
  {:db/id                 #db/id[:db.part/db]
-  :db/ident              :cart/sku-counts
+  :db/ident              :cart/skus
   :db/isComponent        true
   :db/valueType          :db.type/ref
   :db/cardinality        :db.cardinality/many
-  :db/doc                "SKUs with counts for this cart"
-  :db.install/_attribute :db.part/db}
-
- ; Sku-count
-
- {:db/id                 #db/id[:db.part/db]
-  :db/ident              :sku-count/sku
-  :db/valueType          :db.type/long
-  :db/cardinality        :db.cardinality/one
-  :db/doc                "Number of the SKU"
-  :db.install/_attribute :db.part/db}
-
- {:db/id                 #db/id[:db.part/db]
-  :db/ident              :sku-count/count
-  :db/valueType          :db.type/long
-  :db/cardinality        :db.cardinality/one
-  :db/doc                "How many the customer wants"
-  :db.install/_attribute :db.part/db}
-
- ; Item
-
- {:db/id                 #db/id[:db.part/db]
-  :db/ident              :sku/name
-  :db/valueType          :db.type/string
-  :db/cardinality        :db.cardinality/one
-  :db.install/_attribute :db.part/db}
-
- {:db/id                 #db/id[:db.part/db]
-  :db/ident              :sku/description
-  :db/valueType          :db.type/string
-  :db/cardinality        :db.cardinality/one
+  :db/doc                "SKUs with quantities for this cart"
   :db.install/_attribute :db.part/db}
 
  {:db/id                 #db/id[:db.part/db]
   :db/ident              :sku/number
   :db/valueType          :db.type/long
   :db/cardinality        :db.cardinality/one
+  :db/doc                "Number of the SKU"
   :db.install/_attribute :db.part/db}
 
  {:db/id                 #db/id[:db.part/db]
-  :db/ident              :sku/cost
-  :db/valueType          :db.type/double
+  :db/ident              :sku/quantity
+  :db/valueType          :db.type/long
   :db/cardinality        :db.cardinality/one
+  :db/doc                "How many the customer wants"
   :db.install/_attribute :db.part/db}
-
- {:db/id                 #db/id[:db.part/db]
-  :db/ident              :sku/currency
-  :db/valueType          :db.type/ref
-  :db/cardinality        :db.cardinality/one
-  :db.install/_attribute :db.part/db}
-
- {:db/id    #db/id[:db.part/user]
-  :db/ident :sku.currency/euro}
-
- {:db/id    #db/id[:db.part/user]
-  :db/ident :sku.currency/uk-pound}
-
- {:db/id    #db/id[:db.part/user]
-  :db/ident :sku.currency/us-dollar}
-
  ]
